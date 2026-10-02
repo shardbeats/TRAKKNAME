@@ -1,0 +1,260 @@
+/* BEAT NAME GENERATOR — TRAKKOUT fusion theme (amber/gray dark).
+   Same family palette as TRAKKOUT: tweak here without touching code. */
+QMainWindow, QWidget {
+    background-color: #151617;
+    color: #E5E5E5;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 13px;
+}
+QWidget#central { background-color: #151617; }
+QMenuBar {
+    background-color: #1C1D1F;
+    color: #E5E5E5;
+    padding: 2px;
+}
+QMenuBar::item:selected, QMenu::item:selected { background-color: #33363B; }
+QMenu {
+    background-color: #1C1D1F;
+    color: #E5E5E5;
+    border: 1px solid #45474A;
+}
+QLabel { color: #E5E5E5; }
+QLabel#appTitle { font-size: 15px; font-weight: bold; letter-spacing: 1px; }
+QLabel#headerHint { color: #92959A; font-size: 11px; }
+QLabel#headerIcon { color: #F5A623; font-size: 20px; }
+QLabel#sectionTitle {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #92959A;
+}
+/* Result card: visual focal point, TRAKKOUT panel + amber accent */
+QFrame#resultCard {
+    background-color: #1C1D1F;
+    border: 1px solid #45474A;
+    border-radius: 8px;
+}
+QLabel#resultTitle {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+}
+QLabel#resultMeta { font-size: 12px; color: #92959A; }
+QFrame#panel {
+    background-color: #1C1D1F;
+    border: 1px solid #45474A;
+    border-radius: 8px;
+}
+QFrame#generateBar {
+    background-color: #1C1D1F;
+    border: 1px solid #45474A;
+    border-radius: 8px;
+    padding: 6px;
+}
+QGroupBox {
+    background-color: #1C1D1F;
+    border: 1px solid #45474A;
+    border-radius: 6px;
+    margin-top: 14px;
+    padding-top: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #92959A;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+    padding: 0 4px;
+    background-color: transparent;
+}
+QLineEdit, QTextEdit, QPlainTextEdit, QDateTimeEdit {
+    background-color: #202124;
+    border: 1px solid #45474A;
+    border-radius: 4px;
+    padding: 4px;
+    color: #E5E5E5;
+    selection-background-color: #33363B;
+}
+QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QSpinBox:focus,
+QDoubleSpinBox:focus, QDateTimeEdit:focus { border: 1px solid #F5A623; }
+QLineEdit::placeholder { color: #6E7175; }
+QComboBox {
+    background-color: #202124;
+    border: 1px solid #45474A;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #E5E5E5;
+    font-size: 12px;
+    font-weight: bold;
+}
+QComboBox:hover { border-color: #F5A623; color: #F5A623; }
+QComboBox:disabled { background-color: #1C1D1F; border-color: #45474A; color: #383B40; }
+QComboBox QAbstractItemView {
+    background-color: #202124;
+    border: 1px solid #45474A;
+    selection-background-color: #33363B;
+    selection-color: #F5A623;
+    color: #E5E5E5;
+    outline: none;
+}
+QSpinBox, QDoubleSpinBox {
+    background-color: #202124;
+    border: 1px solid #45474A;
+    border-radius: 4px;
+    padding: 3px 6px;
+    color: #E5E5E5;
+    font-size: 12px;
+}
+QSpinBox:hover, QDoubleSpinBox:hover { border-color: #F5A623; }
+QSpinBox:disabled, QDoubleSpinBox:disabled { color: #383B40; border-color: #383B40; }
+QSpinBox::up-button, QSpinBox::down-button,
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    background-color: #2A2C30;
+    border: none;
+    width: 16px;
+}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover { background-color: #F5A623; }
+QPushButton {
+    background-color: #202124;
+    border: 1px solid #45474A;
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: #E5E5E5;
+    font-weight: bold;
+    font-size: 12px;
+}
+QPushButton:hover { border-color: #F5A623; color: #F5A623; }
+QPushButton:pressed { background-color: #F5A623; border-color: #F5A623; color: #161617; }
+QPushButton:disabled { background-color: #1C1D1F; border-color: #45474A; color: #383B40; }
+/* Primary generate action = TRAKKOUT accent button */
+QPushButton#accentButton, QPushButton#primary {
+    background-color: #F5A623;
+    border: none;
+    border-radius: 6px;
+    padding: 11px 18px;
+    color: #161617;
+    font-weight: bold;
+    font-size: 14px;
+}
+QPushButton#accentButton:hover, QPushButton#primary:hover { background-color: #FFB52E; color: #161617; }
+QPushButton#accentButton:pressed, QPushButton#primary:pressed { background-color: #d8901d; color: #161617; }
+QPushButton#accentButton:disabled, QPushButton#primary:disabled {
+    background-color: #2A2C30;
+    border: 1px solid #45474A;
+    color: #383B40;
+}
+/* Single-word toggle: unchecked = normal button, checked = amber (active) */
+QPushButton#singleBtn:checked {
+    background-color: #F5A623;
+    border: 1px solid #F5A623;
+    color: #161617;
+}
+QPushButton#singleBtn:checked:hover { background-color: #FFB52E; color: #161617; }
+QProgressBar {
+    background-color: #202124;
+    border: 1px solid #45474A;
+    border-radius: 4px;
+    text-align: center;
+    min-height: 16px;
+    color: #E5E5E5;
+    font-weight: bold;
+}
+QProgressBar::chunk { background-color: #F5A623; border-radius: 3px; }
+QTableWidget {
+    background-color: #1C1D1F;
+    alternate-background-color: #202124;
+    gridline-color: #45474A;
+    color: #E5E5E5;
+    border: 1px solid #45474A;
+    border-radius: 6px;
+}
+QTableWidget::item:selected { background-color: #33363B; color: #F5A623; }
+QHeaderView::section {
+    background-color: #2A2C30;
+    color: #92959A;
+    border: none;
+    padding: 5px;
+    font-weight: bold;
+}
+QTabWidget::pane { background-color: #151617; border: none; }
+QTabBar::tab {
+    background: transparent;
+    color: #92959A;
+    padding: 10px 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border: none;
+}
+QTabBar::tab:selected { color: #F5A623; border-bottom: 2px solid #F5A623; }
+QTabBar::tab:hover { color: #E5E5E5; }
+QStatusBar { background-color: #1C1D1F; color: #92959A; }
+/* Artist chips: TRAKKOUT nav-button-checked look */
+QLabel#chip {
+    background-color: #33363B;
+    border: 1px solid #F5A623;
+    border-radius: 6px;
+    padding: 4px 12px;
+    color: #F5A623;
+    font-weight: bold;
+}
+QLabel#chip:hover { background-color: #3E4048; }
+QLabel#chipEmpty { color: #6E7175; }
+QLabel#toast {
+    background-color: #F5A623;
+    color: #161617;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-weight: bold;
+}
+QCheckBox, QRadioButton { color: #E5E5E5; font-size: 12px; }
+QCheckBox:hover, QRadioButton:hover { color: #F5A623; }
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #45474A;
+    background-color: #202124;
+}
+QCheckBox::indicator { border-radius: 3px; }
+QRadioButton::indicator { border-radius: 7px; }
+QCheckBox::indicator:hover, QRadioButton::indicator:hover { border-color: #F5A623; }
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background-color: #F5A623;
+    border-color: #F5A623;
+}
+QCheckBox:disabled, QRadioButton:disabled { color: #383B40; }
+QSlider::groove:horizontal { height: 4px; background: #2A2C30; border-radius: 2px; }
+QSlider::handle:horizontal {
+    width: 14px;
+    margin: -6px 0;
+    border-radius: 7px;
+    background: #F5A623;
+}
+QToolTip { background-color: #1C1D1F; color: #E5E5E5; border: 1px solid #45474A; }
+/* Mood sidebar (TRAKKOUT family: sidebar frame + collapsible section) */
+QFrame#sidebar {
+    background-color: #1C1D1F;
+    border: 1px solid #45474A;
+    border-radius: 8px;
+}
+QPushButton#sidebarToggle {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: #92959A;
+}
+QPushButton#sidebarToggle:hover { background-color: #2A2C30; color: #F5A623; }
+QListWidget#moodList {
+    background-color: transparent;
+    border: none;
+    color: #E5E5E5;
+    outline: none;
+}
+QListWidget#moodList::item { padding: 5px 6px; border-radius: 4px; }
+QListWidget#moodList::item:hover { background-color: #2A2C30; }
+QListWidget#moodList::item:selected { background-color: #33363B; color: #F5A623; }
+QLabel#moodHint { color: #6E7175; font-size: 11px; }
+QLabel#moodCount { color: #F5A623; font-size: 11px; font-weight: bold; }
