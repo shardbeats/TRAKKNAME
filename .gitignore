@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# SQLite / user data (lives in %APPDATA%, never in the repo)
+*.db
+*.db-journal
+*.sqlite3
+settings.json
+*.log
+
+# Build / packaging
+dist/
+build/
+*.spec
+
+# IDE
+.idea/
+.vscode/
