@@ -16,8 +16,11 @@ set QT_QPA_PLATFORM=offscreen     :: for windowless UI smoke tests
 ```
 
 ## Seed rules (important)
-- Editable lists live in `app/database/seed_data/` (genres, artists, moods, patterns, vocabulary). `app/database/seed.py` only orchestrates idempotent migrations — **never edit data there**.
-- `ensure_*` conventions: `INSERT OR IGNORE` / never overwrite user edits. Read `seed.py` before adding a new `ensure_*`.
+- Editable lists live in `app/database/seed_data/` (genres, artists, moods, patterns, vocabulary). `app/database/seed/` only orchestrates idempotent migrations — **never edit data there** (`bootstrap.py` = fresh fill, `artists_seed.py` / `patterns_seed.py` / `moods_seed.py` / `placeholders.py` = ensures).
+- `ensure_*` conventions: `INSERT OR IGNORE` / never overwrite user edits. Read `app/database/seed/__init__.py` before adding a new `ensure_*`.
+- First-launch/migration orchestration lives in `app/database/startup.py::ensure_database` (called from `app/main.py`) — don't duplicate it.
+- Engine stages: `app/generator/results.py` (types) → `context.py` → `patterns.py` → `renderer.py`, with `engine.py` as thin facade. Keep the engine free of PySide6.
+- UI: `generator_view/` = `view.py` (Qt only) + `presenter.py` (DB/service, testable) + `meta.py` + `widgets/`; `database_view/` = `view.py` + `tabs/*` + `crud.py` + `io_actions.py`; `dialogs/` = `base.py` + one module per dialog.
 - Patterns have three states with different semantics —
   - `PATTERNS` = active curated set (currently 8: 4 EN + 4 ES),
   - `RETIRED_PATTERNS` = **disabled** (reversible in the UI),
@@ -35,7 +38,7 @@ set QT_QPA_PLATFORM=offscreen     :: for windowless UI smoke tests
 
 ## Don't touch without reason
 - `app/database/schema.py::migrate_database` (legacy columns per DB version).
-- `tools/import_kaikki.py`: vocabulary mining, inserts only, never overwrites; requires a DB backup first.
+- `tools/kaikki/` (constants/filters/db/collect/cli): vocabulary mining, inserts only, never overwrites; requires a DB backup first. `tools/import_kaikki.py` is only a thin wrapper.
 - The mobile seed (`seed-json/` + `tools/export_seed_json.py`) lives in the mobile project: desktop curated-seed changes force a re-export there.
 
 ## Typical curation checklist

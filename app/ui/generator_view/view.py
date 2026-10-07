@@ -1,27 +1,30 @@
-"""Generator view — the visual focal point. Hierarchy: title > generate > genre > artists."""
-from __future__ import annotations
+"""Generator view — the visual focal point. Hierarchy: title > generate > genre > artists.
 
-import random
+Thin Qt view: layout + signals only. Data access lives in ``presenter.py``,
+the result card in ``widgets/result_card.py`` and the subline in ``meta.py``.
+"""
+from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QGuiApplication
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QFrame, QHBoxLayout, QLabel,
-                               QPushButton, QSizePolicy, QSlider, QSpinBox,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSlider,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
-from app.generator.engine import select_artists
 from app.models.enums import ARTIST_POOLS, LANGUAGE_LABELS, POOL_EMPTY_TEXT
+from app.ui.generator_view.meta import meta_text
+from app.ui.generator_view.presenter import GeneratorOptions, GeneratorPresenter
+from app.ui.generator_view.widgets.result_card import ResultCard
 from app.ui.widgets import ChipRow, SectionTitle, Toast
 from app.utils.logging import get_logger
-
-
-def meta_text(genre: str, lang_label: str, moods: list[str], artists: list[str], empty: str) -> str:
-    """Result-card subline: 'Genre · Language [+ moods]' + newline + 'a × b'."""
-    head = f"{genre} · {lang_label}"
-    if moods:
-        head += f" · {' + '.join(moods)}"
-    artists_txt = " × ".join(artists) if artists else empty
-    return f"{head}\n{artists_txt}"
 
 
 class GeneratorView(QWidget):
@@ -30,6 +33,7 @@ class GeneratorView(QWidget):
         self.service = service
         self.settings = settings
         self.on_generated = on_generated
+        self.presenter = GeneratorPresenter(service, settings)
         self.current_title = ""
         self._build()
         self.refresh_options()
@@ -91,23 +95,11 @@ class GeneratorView(QWidget):
         self.chips = ChipRow()
         root.addWidget(self.chips)
 
-        # Result card
-        self.card = QFrame()
-        self.card.setObjectName("resultCard")
-        self.card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        cl = QVBoxLayout(self.card)
-        cl.setContentsMargins(20, 26, 20, 26)
-        self.result_label = QLabel("Press Generate")
-        self.result_label.setObjectName("resultTitle")
-        self.result_label.setAlignment(Qt.AlignCenter)
-        self.result_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.result_label.setWordWrap(True)
-        cl.addWidget(self.result_label)
-        self.meta_label = QLabel("")
-        self.meta_label.setObjectName("resultMeta")
-        self.meta_label.setAlignment(Qt.AlignCenter)
-        cl.addWidget(self.meta_label)
+        self.card = ResultCard()
         root.addWidget(self.card, 1)
+        # Compat aliases (old code touched these labels directly).
+        self.result_label = self.card.title_label
+        self.meta_label = self.card.meta_label
 
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
@@ -176,51 +168,40 @@ class GeneratorView(QWidget):
         copy_act.triggered.connect(self.do_copy)
         self.addAction(copy_act)
 
-    # ---- data ----
+    # ---- data (delegates to presenter) ----
     def _db(self):
-        from app.database.connection import get_connection
-        return get_connection(self.service.db_path)
+        return self.presenter._db()
 
     def refresh_options(self):
         s = self.settings.data
-        conn = self._db()
-        try:
-            genres = [r["name"] for r in conn.execute("SELECT name FROM genres WHERE enabled=1 ORDER BY name")]
-            cur = self.genre_combo.currentText()
-            self.genre_combo.clear()
-            self.genre_combo.addItems(genres)
-            target = cur or s.get("default_genre", "Trap")
-            idx = self.genre_combo.findText(target)
-            if idx >= 0:
-                self.genre_combo.setCurrentIndex(idx)
-            lang = s.get("default_language", "en")
-            self.lang_combo.setCurrentIndex(0 if lang == "en" else 1)
-            self.count_spin.setValue(int(s.get("artists_per_generation", 2)))
-            self.influence_slider.setValue(int(float(s.get("artist_influence", 0.5)) * 100))
-            self.cb_verbs.setChecked(bool(s.get("use_verbs", True)))
-            self.cb_adj.setChecked(bool(s.get("use_adjectives", True)))
-            self.cb_nouns.setChecked(bool(s.get("use_nouns", True)))
-            # styles (linked to the active language: only applicable ones)
-            self._reload_styles(self.lang_combo.currentData() or "en",
-                                keep=s.get("default_style", "Random"))
-            self.single_btn.setChecked(bool(s.get("single_word", False)))
-            self.style_combo.setEnabled(not self.single_btn.isChecked())
-            pool = s.get("artist_pool", "all")
-            pi = self.pool_combo.findData(pool)
-            self.pool_combo.setCurrentIndex(pi if pi >= 0 else 0)
-        finally:
-            conn.close()
+        genres = self.presenter.list_genres()
+        cur = self.genre_combo.currentText()
+        self.genre_combo.clear()
+        self.genre_combo.addItems(genres)
+        target = cur or s.get("default_genre", "Trap")
+        idx = self.genre_combo.findText(target)
+        if idx >= 0:
+            self.genre_combo.setCurrentIndex(idx)
+        lang = s.get("default_language", "en")
+        self.lang_combo.setCurrentIndex(0 if lang == "en" else 1)
+        self.count_spin.setValue(int(s.get("artists_per_generation", 2)))
+        self.influence_slider.setValue(int(float(s.get("artist_influence", 0.5)) * 100))
+        self.cb_verbs.setChecked(bool(s.get("use_verbs", True)))
+        self.cb_adj.setChecked(bool(s.get("use_adjectives", True)))
+        self.cb_nouns.setChecked(bool(s.get("use_nouns", True)))
+        # styles (linked to the active language: only applicable ones)
+        self._reload_styles(self.lang_combo.currentData() or "en",
+                            keep=s.get("default_style", "Random"))
+        self.single_btn.setChecked(bool(s.get("single_word", False)))
+        self.style_combo.setEnabled(not self.single_btn.isChecked())
+        pool = s.get("artist_pool", "all")
+        pi = self.pool_combo.findData(pool)
+        self.pool_combo.setCurrentIndex(pi if pi >= 0 else 0)
         self._preview_artists()
 
     def _reload_styles(self, lang: str, keep: str | None = None) -> None:
         """Refill the style combo with Random + patterns for `lang` only."""
-        conn = self._db()
-        try:
-            rows = conn.execute(
-                "SELECT name FROM patterns WHERE enabled = 1 AND language IN ('any', ?) ORDER BY name",
-                (lang,)).fetchall()
-        finally:
-            conn.close()
+        names = self.presenter.list_styles(lang)
         want = keep if keep is not None else self.style_combo.currentText()
         if not want:
             want = self.settings.data.get("default_style", "Random")
@@ -231,8 +212,8 @@ class GeneratorView(QWidget):
             pass
         self.style_combo.clear()
         self.style_combo.addItem("Random")
-        for r in rows:
-            self.style_combo.addItem(r["name"])
+        for name in names:
+            self.style_combo.addItem(name)
         i = self.style_combo.findText(want)
         self.style_combo.setCurrentIndex(i if i >= 0 else 0)
 
@@ -247,28 +228,26 @@ class GeneratorView(QWidget):
         else:
             self._persist_opts()
 
-    def _current_opts(self):
+    def _current_opts(self) -> GeneratorOptions:
+        return GeneratorOptions(
+            genre=self.genre_combo.currentText().strip(),
+            language=self.lang_combo.currentData(),
+            artist_count=self.count_spin.value(),
+            style=self.style_combo.currentText(),
+            single_word=self.single_btn.isChecked(),
+            artist_pool=self.pool_combo.currentData() or "all",
+        )
+
+    def _extras(self) -> dict:
         return {
-            "genre": self.genre_combo.currentText().strip(),
-            "language": self.lang_combo.currentData(),
-            "artist_count": self.count_spin.value(),
-            "style": self.style_combo.currentText(),
-            "single_word": self.single_btn.isChecked(),
-            "artist_pool": self.pool_combo.currentData() or "all",
+            "artist_influence": self.influence_slider.value() / 100.0,
+            "use_verbs": self.cb_verbs.isChecked(),
+            "use_adjectives": self.cb_adj.isChecked(),
+            "use_nouns": self.cb_nouns.isChecked(),
         }
 
     def _persist_opts(self):
-        o = self._current_opts()
-        self.settings.data.update({
-            "default_genre": o["genre"], "default_language": o["language"],
-            "artists_per_generation": o["artist_count"], "default_style": o["style"],
-            "artist_influence": self.influence_slider.value() / 100.0,
-            "use_verbs": self.cb_verbs.isChecked(), "use_adjectives": self.cb_adj.isChecked(),
-            "use_nouns": self.cb_nouns.isChecked(),
-            "single_word": self.single_btn.isChecked(),
-            "artist_pool": o["artist_pool"],
-        })
-        self.settings.save()
+        self.presenter.persist(self._current_opts(), self._extras())
 
     def _on_single_toggled(self, checked: bool) -> None:
         self.style_combo.setEnabled(not checked)
@@ -278,39 +257,29 @@ class GeneratorView(QWidget):
         self._persist_opts()
         self._preview_artists()
 
-    def _fetch_artists(self) -> tuple[list[str], dict]:
-        """Weighted artist pick for the current opts (preview AND re-roll)."""
+    def _fetch_artists(self) -> tuple[list[str], GeneratorOptions]:
         o = self._current_opts()
-        conn = self._db()
-        try:
-            grow = conn.execute("SELECT id FROM genres WHERE name=?", (o["genre"],)).fetchone()
-            gid = grow["id"] if grow else None
-            pool = o["artist_pool"] if o["artist_pool"] != "all" else None
-            return select_artists(conn, gid, o["artist_count"], random.Random(), pool), o
-        finally:
-            conn.close()
+        return self.presenter.fetch_artists(o)
 
     def _preview_artists(self):
         names, o = self._fetch_artists()
-        self.chips.set_chips(names, POOL_EMPTY_TEXT.get(o["artist_pool"], POOL_EMPTY_TEXT["all"]))
+        self.chips.set_chips(names, POOL_EMPTY_TEXT.get(o.artist_pool, POOL_EMPTY_TEXT["all"]))
 
     def _reroll_artists(self) -> None:
         """New weighted artist pick for the CURRENT title (no regeneration)."""
         names, o = self._fetch_artists()
-        empty = POOL_EMPTY_TEXT.get(o["artist_pool"], POOL_EMPTY_TEXT["all"])
+        empty = POOL_EMPTY_TEXT.get(o.artist_pool, POOL_EMPTY_TEXT["all"])
         self.chips.set_chips(names, empty)
         if self.current_title:
             self.meta_label.setText(meta_text(
-                o["genre"], LANGUAGE_LABELS.get(o["language"], o["language"]),
+                o.genre, LANGUAGE_LABELS.get(o.language, o.language),
                 self.settings.data.get("selected_moods", []), names, empty))
 
     def do_generate(self):
         self._persist_opts()
         o = self._current_opts()
         try:
-            res = self.service.generate(genre=o["genre"] or None, language=o["language"],
-                                        artist_count=o["artist_count"], style=o["style"],
-                                        single_word=o["single_word"], artist_pool=o["artist_pool"])
+            res = self.presenter.generate(o)
         except Exception as e:
             get_logger().exception("generation failed")
             self.result_label.setText("Unable to generate")
@@ -321,8 +290,8 @@ class GeneratorView(QWidget):
         lang_label = LANGUAGE_LABELS.get(res.language, res.language)
         self.meta_label.setText(meta_text(
             res.genre_name, lang_label, res.moods, res.artists,
-            POOL_EMPTY_TEXT.get(o["artist_pool"], POOL_EMPTY_TEXT["all"])))
-        self.chips.set_chips(res.artists, POOL_EMPTY_TEXT.get(o["artist_pool"], POOL_EMPTY_TEXT["all"]))
+            POOL_EMPTY_TEXT.get(o.artist_pool, POOL_EMPTY_TEXT["all"])))
+        self.chips.set_chips(res.artists, POOL_EMPTY_TEXT.get(o.artist_pool, POOL_EMPTY_TEXT["all"]))
         if self.on_generated:
             self.on_generated()
 
