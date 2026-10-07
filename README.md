@@ -28,10 +28,22 @@ run.bat        :: launch with existing .venv
 ```
 Manual: `pip install -r requirements.txt` then `python app\main.py`.
 
+## Portable .exe (no Python needed)
+```bat
+.venv\Scripts\python.exe build_exe.py          :: tests + windowed one-file exe (~50 MB)
+.venv\Scripts\python.exe build_exe.py --console :: console build (diagnostics on clean PCs)
+```
+Copy `dist\TRAKKNAME.exe` anywhere (USB stick included) and run it — fully
+portable, no install. First launch creates `data\` next to the exe
+(`trakkname.db`, `settings.json`, `logs\app.log`), migrating any existing
+`%APPDATA%` copy once. Opt out with `use_appdata.flag` next to the exe or
+`TRAKKNAME_APPDATA=1`; override with `TRAKKNAME_DATA_DIR=<dir>`.
+
 ## Database location
-- Windows: `%APPDATA%\TRAKKNAME\trakkname.db` (auto-migrated from the old `BeatNameGenerator` folder on first launch)
-- Settings: `%APPDATA%\TRAKKNAME\settings.json`
-- Logs: `%APPDATA%\TRAKKNAME\logs\app.log`
+- Portable `.exe`: `<exe-dir>\data\trakkname.db` (+ `settings.json`, `logs\app.log`)
+- Source runs: `%APPDATA%\TRAKKNAME\trakkname.db` (auto-migrated from the old `BeatNameGenerator` folder on first launch)
+- Settings: `settings.json` next to the DB in both modes
+- Logs: `logs\app.log` next to the DB in both modes
 
 ## Moods (type-beat taxonomy)
 
