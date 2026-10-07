@@ -5,14 +5,16 @@ Operations handover for keeping this project healthy. Read before touching seed,
 ## Environment
 - Python 3.11+ with `.venv` at the root (`start.bat` creates it and installs `requirements.txt`; `run.bat` only launches).
 - Deps: PySide6 (+ pytest for tests only).
-- User data lives **outside the repo**: `%APPDATA%\TRAKKNAME\trakkname.db`, `settings.json`, `logs\app.log`. Never store DB/settings inside the project.
+- User data lives **outside the repo**: source runs use `%APPDATA%\TRAKKNAME\trakkname.db`, `settings.json`, `logs\app.log`; the frozen `.exe` is fully portable and uses `<exe-dir>\data\` instead (see `app/utils/paths.py`: `TRAKKNAME_DATA_DIR` override, `use_appdata.flag` / `TRAKKNAME_APPDATA=1` opt-out, one-time `%APPDATA%` → `data` migration). Never store DB/settings inside the project.
 - First launch migrates once from the legacy `BeatNameGenerator` folder (`app/utils/paths.py`) — don't touch that block except on rebrand.
 
 ## Routines
 ```bat
-python -m pytest tests/ -q        :: 43 tests, must pass before any change
+python -m pytest tests/ -q        :: 47 tests, must pass before any change
 python app\main.py                :: run from source
 set QT_QPA_PLATFORM=offscreen     :: for windowless UI smoke tests
+.venv\Scripts\python.exe build_exe.py          :: tests + portable one-file exe (~50 MB, dist/ is gitignored)
+.venv\Scripts\python.exe build_exe.py --console :: console build to diagnose startup failures on clean PCs
 ```
 
 ## Seed rules (important)

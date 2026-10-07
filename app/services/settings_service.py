@@ -1,4 +1,4 @@
-"""Persistent user settings (JSON in %APPDATA%)."""
+"""Persistent user settings (JSON next to the DB: ./data or %APPDATA%)."""
 from __future__ import annotations
 
 import json
