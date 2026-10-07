@@ -70,24 +70,28 @@ python -m pytest tests/ -q
 ```
 43 tests: engine parity (weights, grammar, templates, moods, pools, single-word fallback, pattern migrations), repositories and placeholders. Architecture: `UI → GenerationService → Engine/Repositories → SQLite`. The engine has zero PySide6 dependency (a UI smoke script can run with `QT_QPA_PLATFORM=offscreen`).
 
-Seed data lives in `app/database/seed_data/` (edit lists there, never in `seed.py`, which only orchestrates idempotent migrations).
+Seed data lives in `app/database/seed_data/` (edit lists there, never in `seed/`, which only orchestrates idempotent migrations).
 
 ## Project structure
 ```
 app/
-  main.py            entry point (dirs, logging, DB ensure, QApplication)
+  main.py            entry point (dirs, logging, QApplication; DB ensure in database/startup.py)
   models/            enums + pool/language labels
-  database/          connection, schema + migrations, seed orchestration,
+  database/          connection, schema + migrations, startup (ensure_database),
+                     seed/ (bootstrap + artists_seed + patterns_seed + moods_seed + placeholders),
                      seed_data/ (genres, artists, moods, patterns, vocabulary),
                      repositories/ (one module per table)
-  generator/         weighted_random, grammar (ES agreement), templates, engine
+  generator/         weighted_random, grammar (ES agreement), templates,
+                     results + artists + context + patterns + renderer, engine (thin facade)
   services/          generation_service, settings_service, import_export
-  ui/                main_window, generator_view, mood_sidebar, history_view,
-                     database_view, dialogs (CRUD), settings_view,
-                     widgets, theme + style.qss
+  ui/                main_window, mood_sidebar, history_view,
+                     generator_view/ (view + presenter + meta + widgets/result_card),
+                     database_view/ (view + crud + io_actions + tabs/genres-artists-words-patterns-moods),
+                     dialogs/ (base + genre/artist/word/pattern/mood),
+                     settings_view, widgets, theme + style.qss
   utils/             paths (%APPDATA% + legacy migration), logging, text
 tests/               43 pytest tests (see above)
-tools/               import_kaikki (vocab mining), make_icon (icon generator)
+tools/               kaikki/ (constants + filters + db + collect + cli), import_kaikki (thin wrapper), make_icon
 ```
 
 ## License
