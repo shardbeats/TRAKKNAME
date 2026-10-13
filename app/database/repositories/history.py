@@ -4,6 +4,11 @@ import json
 import sqlite3
 from datetime import datetime
 
+# The history table grows on every generation: cap it so the DB, the
+# recent-titles query and the JSON export stay bounded forever.
+HISTORY_KEEP = 5000
+RECENT_LIMIT_MAX = 5000
+
 
 def save_history(conn: sqlite3.Connection, title: str, genre_id: int | None, language: str, artists: list[str], pattern: str, moods: list[str] | None = None, artist_pool: str = "all") -> int:
     with conn:
@@ -19,11 +24,25 @@ def save_history(conn: sqlite3.Connection, title: str, genre_id: int | None, lan
             cur = conn.execute(
                 "INSERT INTO generation_history(title, genre_id, language, artists_json, pattern, created_at, moods_json) VALUES (?,?,?,?,?,?,?)",
                 (title, genre_id, language, json.dumps(artists, ensure_ascii=False), pattern, datetime.now().isoformat(timespec="seconds"), json.dumps(moods or [], ensure_ascii=False)))
-        return cur.lastrowid
+        new_id = cur.lastrowid
+        # Prune oldest rows in the same transaction (cheap: indexed id order).
+        try:
+            conn.execute(
+                "DELETE FROM generation_history WHERE id NOT IN "
+                "(SELECT id FROM generation_history ORDER BY id DESC LIMIT ?)",
+                (HISTORY_KEEP,))
+        except Exception:
+            pass
+        return new_id
 
 
 def recent_titles(conn: sqlite3.Connection, limit: int = 100) -> set[str]:
     from app.utils.text import normalize_title
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        limit = 100
+    limit = max(0, min(limit, RECENT_LIMIT_MAX))
     rows = conn.execute("SELECT title FROM generation_history ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
     return {normalize_title(r["title"]) for r in rows}
 

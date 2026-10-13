@@ -22,10 +22,24 @@ def search_words(conn: sqlite3.Connection, language: str = "", pos: str = "", ge
     return conn.execute(q, args).fetchall()
 
 
+def load_genre_links(conn: sqlite3.Connection) -> dict[int, dict[int, float]]:
+    """Load the whole word->genre weight map ONCE per generation.
+
+    Callers (render_title / generate_title) build this once and pass it as
+    ``links`` to pool_words, instead of re-scanning the full word_genres
+    table on every slot of every attempt (up to ~100 full scans per click).
+    """
+    links: dict[int, dict[int, float]] = {}
+    for r in conn.execute("SELECT word_id, genre_id, weight FROM word_genres"):
+        links.setdefault(r["word_id"], {})[r["genre_id"]] = float(r["weight"])
+    return links
+
+
 def pool_words(conn: sqlite3.Connection, language: str, pos: str, genre_id: int | None,
                related_ids: list[int], w_genre: float, w_related: float, w_global: float,
                allowed_pos: set[str] | None = None, artist_boost: dict[int, float] | None = None,
-               mood_boost: dict[int, float] | None = None, w_mood: float = 0.0):
+               mood_boost: dict[int, float] | None = None, w_mood: float = 0.0,
+               links: dict[int, dict[int, float]] | None = None):
     """Return [(word, gender, number, eff_weight)] mixing genre/related/global pools.
 
     mood_boost maps word_id -> link weight; linked words get
@@ -38,10 +52,10 @@ def pool_words(conn: sqlite3.Connection, language: str, pos: str, genre_id: int 
         (language, pos)).fetchall()
     if not rows:
         return []
-    # one query for ALL genre links (was N+1 before): word_id -> {genre_id: weight}
-    links: dict[int, dict[int, float]] = {}
-    for r in conn.execute("SELECT word_id, genre_id, weight FROM word_genres"):
-        links.setdefault(r["word_id"], {})[r["genre_id"]] = float(r["weight"])
+    # Reuse the per-generation cache when provided; otherwise fall back to
+    # a single scan (keeps direct callers working unchanged).
+    if links is None:
+        links = load_genre_links(conn)
     related_set = set(related_ids or [])
     out = []
     for r in rows:

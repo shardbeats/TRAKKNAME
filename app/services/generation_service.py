@@ -1,10 +1,30 @@
 """High-level generation facade used by the UI (and tests)."""
 from __future__ import annotations
 
+import math
 import random
 import sqlite3
 
 from app.generator.engine import GenerationResult, generate_title
+
+
+def _f(value, default: float, lo: float, hi: float) -> float:
+    """Sanitize a float coming from editable settings (NaN/inf/str safe)."""
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return default
+    if not math.isfinite(v):
+        return default
+    return max(lo, min(hi, v))
+
+
+def _i(value, default: int, lo: int, hi: int) -> int:
+    try:
+        v = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, v))
 
 
 class GenerationService:
@@ -44,11 +64,11 @@ class GenerationService:
         conn = self._conn()
         try:
             return generate_title(
-                conn, genre_name=genre, language=language, artist_count=int(artist_count),
-                style=style, w_genre=float(s.get("w_genre", 0.70)), w_related=float(s.get("w_related", 0.20)),
-                w_global=float(s.get("w_global", 0.10)), artist_influence=float(s.get("artist_influence", 0.5)),
-                allowed_pos=allowed, recent_limit=int(s.get("recent_exclusion_count", 100)),
+                conn, genre_name=genre, language=language, artist_count=_i(artist_count, 2, 0, 10),
+                style=style, w_genre=_f(s.get("w_genre", 0.70), 0.70, 0.0, 10.0), w_related=_f(s.get("w_related", 0.20), 0.20, 0.0, 10.0),
+                w_global=_f(s.get("w_global", 0.10), 0.10, 0.0, 10.0), artist_influence=_f(s.get("artist_influence", 0.5), 0.5, 0.0, 2.0),
+                allowed_pos=allowed, recent_limit=_i(s.get("recent_exclusion_count", 100), 100, 0, 5000),
                 rng=self._rng, save=save, single_word=bool(single_word),
-                moods=moods, w_mood=float(s.get("w_mood", 1.0)), artist_pool=artist_pool)
+                moods=moods, w_mood=_f(s.get("w_mood", 1.0), 1.0, 0.0, 10.0), artist_pool=artist_pool)
         finally:
             conn.close()

@@ -11,6 +11,7 @@ import random
 import sqlite3
 
 from app.database.repositories import history as history_repo
+from app.database.repositories import words as words_repo
 from app.generator import weighted_random as wr
 from app.generator.artists import select_artists
 from app.generator.context import (
@@ -63,11 +64,15 @@ def generate_title(conn: sqlite3.Connection, genre_name: str | None = None, lang
         allowed_pos = set(allowed_pos) | {"noun"} if allowed_pos else {"noun"}
 
     last_err: Exception | None = None
+    # One genre-link map for the whole generation: pool_words must NOT
+    # re-scan word_genres on every slot of every attempt.
+    links = words_repo.load_genre_links(conn)
     for _attempt in range(30):
         prow = wr.choose_weighted(list(prows), [max(float(r["weight"]), 0) for r in prows], rng)
         try:
             title = render_title(conn, ctx, prow["template"], language,
-                                 w_genre, w_related, w_global, w_mood, allowed_pos, rng)
+                                 w_genre, w_related, w_global, w_mood, allowed_pos, rng,
+                                 links)
         except GenerationError as e:
             last_err = e
             continue

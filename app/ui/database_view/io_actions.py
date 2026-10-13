@@ -33,14 +33,17 @@ def import_database_action(parent: QWidget, db_path, on_done) -> None:
         return
     conn = get_connection(db_path)
     try:
-        import_database(conn, Path(path))
+        skipped = import_database(conn, Path(path))
     except Exception as e:
-        QMessageBox.warning(parent, "Import failed", str(e))
+        QMessageBox.warning(parent, "Import failed", str(e)[:500])
         return
     finally:
         conn.close()
     on_done()
-    QMessageBox.information(parent, "Import", "Database imported.")
+    if skipped:
+        QMessageBox.information(parent, "Import", f"Database imported with {skipped} malformed rows skipped.")
+    else:
+        QMessageBox.information(parent, "Import", "Database imported.")
 
 
 def reset_database_action(parent: QWidget, db_path, on_done) -> None:

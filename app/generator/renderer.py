@@ -24,20 +24,25 @@ def pick_word(pool: list[tuple[str, str | None, str | None, float]], rng: random
 
 def render_title(conn: sqlite3.Connection, ctx: GenContext, template: str, language: str,
                  w_genre: float, w_related: float, w_global: float, w_mood: float,
-                 allowed_pos: set[str] | None, rng: random.Random) -> str:
+                 allowed_pos: set[str] | None, rng: random.Random,
+                 links: dict[int, dict[int, float]] | None = None) -> str:
     """Fill one template's slots -> title-cased title."""
     parts = parse_template(template)
     needed = [v for k, v in parts if k == "slot"]
     if allowed_pos is not None and any(n not in allowed_pos for n in needed):
         raise GenerationError(f"Template needs disabled word types: {template}")
+    if links is None:
+        links = words_repo.load_genre_links(conn)
     pools: dict[str, list] = {}
     for slot in set(needed):
         pool = words_repo.pool_words(conn, language, slot, ctx.genre_id, ctx.related_ids,
                                      w_genre, w_related, w_global,
-                                     allowed_pos, ctx.artist_boost, ctx.mood_boost, w_mood)
+                                     allowed_pos, ctx.artist_boost, ctx.mood_boost, w_mood,
+                                     links)
         if not pool:
             pool = words_repo.pool_words(conn, language, slot, None, [], 0, 0, 1.0,
-                                         allowed_pos, None, ctx.mood_boost, w_mood)
+                                         allowed_pos, None, ctx.mood_boost, w_mood,
+                                         links)
         if not pool:
             raise GenerationError(f"No enabled {slot}s are available for this genre.")
         pools[slot] = pool

@@ -13,4 +13,9 @@ def get_connection(db_path: str | Path) -> sqlite3.Connection:
         conn.execute("PRAGMA journal_mode = WAL;")
     except sqlite3.DatabaseError:
         pass
+    try:
+        # Don't fail instantly under rapid clicks: wait for the lock briefly.
+        conn.execute("PRAGMA busy_timeout = 5000;")
+    except sqlite3.DatabaseError:
+        pass
     return conn
