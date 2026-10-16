@@ -133,7 +133,7 @@ class GeneratorView(QWidget):
         self.max_spin = QSpinBox()
         self.max_spin.setRange(0, 30)
         self.max_spin.setSpecialValueText("Off")
-        self.max_spin.setToolTip("Max title characters incl. spaces (0=Off). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
+        self.max_spin.setToolTip("Max title characters incl. spaces (Off, 12-30). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
         self.max_spin.setMinimumWidth(80)
         max_box.addWidget(self.max_spin)
         opt.addLayout(max_box, 1)
@@ -163,7 +163,8 @@ class GeneratorView(QWidget):
         self.lang_combo.currentIndexChanged.connect(self._on_language_changed)
         self.reroll_btn.clicked.connect(self._reroll_artists)
         self.single_btn.toggled.connect(self._on_single_toggled)
-        self.max_spin.valueChanged.connect(lambda _: self._persist_opts())
+        self._last_max = 0
+        self.max_spin.valueChanged.connect(self._on_max_changed)
 
         self.gen_act = QAction(self)
         self.gen_act.setShortcut("Space")
@@ -205,9 +206,15 @@ class GeneratorView(QWidget):
         self.single_btn.setChecked(bool(s.get("single_word", False)))
         self.style_combo.setEnabled(not self.single_btn.isChecked())
         try:
-            self.max_spin.setValue(int(s.get("max_title_length", 0) or 0))
+            raw_max = int(s.get("max_title_length", 0) or 0)
         except (TypeError, ValueError):
-            self.max_spin.setValue(0)
+            raw_max = 0
+        if 1 <= raw_max <= 11:
+            raw_max = 12
+        self.max_spin.blockSignals(True)
+        self.max_spin.setValue(raw_max)
+        self.max_spin.blockSignals(False)
+        self._last_max = raw_max
         self.max_spin.setEnabled(not self.single_btn.isChecked())
         pool = s.get("artist_pool", "all")
         pi = self.pool_combo.findData(pool)
@@ -264,6 +271,20 @@ class GeneratorView(QWidget):
 
     def _persist_opts(self):
         self.presenter.persist(self._current_opts(), self._extras())
+
+    def _on_max_changed(self, v: int) -> None:
+        # Skip the 1-11 gap: Off (0) steps straight to 12 and back.
+        # Stepping down from 12 lands on 0; anything else in 1-11 snaps to 12.
+        if 1 <= v <= 11:
+            prev = getattr(self, "_last_max", 0)
+            target = 0 if (prev == 12 and v == 11) else 12
+            self._last_max = target
+            if v != target:
+                self.max_spin.setValue(target)
+                return
+            v = target
+        self._last_max = v
+        self._persist_opts()
 
     def _on_single_toggled(self, checked: bool) -> None:
         self.style_combo.setEnabled(not checked)

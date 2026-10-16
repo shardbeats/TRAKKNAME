@@ -39,7 +39,7 @@ class SettingsView(QWidget):
         self.max_len = QSpinBox()
         self.max_len.setRange(0, 30)
         self.max_len.setSpecialValueText("Off")
-        self.max_len.setToolTip("Max title characters incl. spaces (0=Off). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
+        self.max_len.setToolTip("Max title characters incl. spaces (Off, 12-30). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
         form.addRow("Default language", self.lang)
         form.addRow("Default genre", self.genre)
         form.addRow("Artists per generation", self.artist_count)
@@ -57,7 +57,20 @@ class SettingsView(QWidget):
         row.addWidget(self.save_btn)
         root.addLayout(row)
         root.addStretch(1)
+        self._last_max = 0
+        self.max_len.valueChanged.connect(self._on_max_changed)
         self.save_btn.clicked.connect(self.save)
+
+    def _on_max_changed(self, v: int) -> None:
+        if 1 <= v <= 11:
+            prev = getattr(self, "_last_max", 0)
+            target = 0 if (prev == 12 and v == 11) else 12
+            self._last_max = target
+            if v != target:
+                self.max_len.setValue(target)
+                return
+            v = target
+        self._last_max = v
 
     def load(self):
         from app.database.connection import get_connection
@@ -70,9 +83,15 @@ class SettingsView(QWidget):
         self.w_global.setValue(float(s.get("w_global", 0.10)))
         self.w_mood.setValue(float(s.get("w_mood", 1.0)))
         try:
-            self.max_len.setValue(int(s.get("max_title_length", 0) or 0))
+            raw_max = int(s.get("max_title_length", 0) or 0)
         except (TypeError, ValueError):
-            self.max_len.setValue(0)
+            raw_max = 0
+        if 1 <= raw_max <= 11:
+            raw_max = 12
+        self.max_len.blockSignals(True)
+        self.max_len.setValue(raw_max)
+        self.max_len.blockSignals(False)
+        self._last_max = raw_max
         # genres for default
         try:
             conn = get_connection(self.settings.path.parent / "trakkname.db")
@@ -89,6 +108,9 @@ class SettingsView(QWidget):
             self.genre.setCurrentIndex(i)
 
     def save(self):
+        mv = self.max_len.value()
+        if 1 <= mv <= 11:
+            mv = 12
         self.settings.data.update({
             "default_language": self.lang.currentData(),
             "default_genre": self.genre.currentText().strip(),
@@ -98,7 +120,7 @@ class SettingsView(QWidget):
             "w_related": self.w_related.value(),
             "w_global": self.w_global.value(),
             "w_mood": self.w_mood.value(),
-            "max_title_length": self.max_len.value(),
+            "max_title_length": mv,
         })
         self.settings.save()
         if self.on_changed:

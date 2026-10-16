@@ -70,6 +70,8 @@ class GenerationService:
             max_chars = 0
         if max_chars <= 0:
             max_chars = 0
+        elif max_chars < 12:
+            max_chars = 12
         elif max_chars > 30:
             max_chars = 30
         if single_word:
