@@ -36,6 +36,10 @@ class SettingsView(QWidget):
         self.w_mood.setRange(0, 3)
         self.w_mood.setSingleStep(0.25)
         self.w_mood.setToolTip("Mood word boost: 1.0 = mood words twice as likely")
+        self.max_len = QSpinBox()
+        self.max_len.setRange(0, 30)
+        self.max_len.setSpecialValueText("Off")
+        self.max_len.setToolTip("Max title characters incl. spaces (0=Off, 12-30). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
         form.addRow("Default language", self.lang)
         form.addRow("Default genre", self.genre)
         form.addRow("Artists per generation", self.artist_count)
@@ -44,6 +48,7 @@ class SettingsView(QWidget):
         form.addRow("Related genre weight", self.w_related)
         form.addRow("Global vocabulary weight", self.w_global)
         form.addRow("Mood influence", self.w_mood)
+        form.addRow("Max title length", self.max_len)
         root.addLayout(form)
         row = QHBoxLayout()
         self.save_btn = QPushButton("Save settings")
@@ -64,6 +69,10 @@ class SettingsView(QWidget):
         self.w_related.setValue(float(s.get("w_related", 0.20)))
         self.w_global.setValue(float(s.get("w_global", 0.10)))
         self.w_mood.setValue(float(s.get("w_mood", 1.0)))
+        try:
+            self.max_len.setValue(int(s.get("max_title_length", 0) or 0))
+        except (TypeError, ValueError):
+            self.max_len.setValue(0)
         # genres for default
         try:
             conn = get_connection(self.settings.path.parent / "trakkname.db")
@@ -89,6 +98,7 @@ class SettingsView(QWidget):
             "w_related": self.w_related.value(),
             "w_global": self.w_global.value(),
             "w_mood": self.w_mood.value(),
+            "max_title_length": self.max_len.value(),
         })
         self.settings.save()
         if self.on_changed:

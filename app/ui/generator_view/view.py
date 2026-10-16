@@ -128,6 +128,15 @@ class GeneratorView(QWidget):
         style_row.addWidget(self.single_btn)
         style_box.addLayout(style_row)
         opt.addLayout(style_box, 2)
+        max_box = QVBoxLayout()
+        max_box.addWidget(SectionTitle("Max length"))
+        self.max_spin = QSpinBox()
+        self.max_spin.setRange(0, 30)
+        self.max_spin.setSpecialValueText("Off")
+        self.max_spin.setToolTip("Max title characters incl. spaces (0=Off, 12-30). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
+        self.max_spin.setMinimumWidth(80)
+        max_box.addWidget(self.max_spin)
+        opt.addLayout(max_box, 1)
         words_box = QVBoxLayout()
         words_box.addWidget(SectionTitle("Words"))
         wr = QHBoxLayout()
@@ -154,6 +163,7 @@ class GeneratorView(QWidget):
         self.lang_combo.currentIndexChanged.connect(self._on_language_changed)
         self.reroll_btn.clicked.connect(self._reroll_artists)
         self.single_btn.toggled.connect(self._on_single_toggled)
+        self.max_spin.valueChanged.connect(lambda _: self._persist_opts())
 
         self.gen_act = QAction(self)
         self.gen_act.setShortcut("Space")
@@ -194,6 +204,11 @@ class GeneratorView(QWidget):
                             keep=s.get("default_style", "Random"))
         self.single_btn.setChecked(bool(s.get("single_word", False)))
         self.style_combo.setEnabled(not self.single_btn.isChecked())
+        try:
+            self.max_spin.setValue(int(s.get("max_title_length", 0) or 0))
+        except (TypeError, ValueError):
+            self.max_spin.setValue(0)
+        self.max_spin.setEnabled(not self.single_btn.isChecked())
         pool = s.get("artist_pool", "all")
         pi = self.pool_combo.findData(pool)
         self.pool_combo.setCurrentIndex(pi if pi >= 0 else 0)
@@ -236,6 +251,7 @@ class GeneratorView(QWidget):
             style=self.style_combo.currentText(),
             single_word=self.single_btn.isChecked(),
             artist_pool=self.pool_combo.currentData() or "all",
+            max_chars=self.max_spin.value(),
         )
 
     def _extras(self) -> dict:
@@ -251,6 +267,7 @@ class GeneratorView(QWidget):
 
     def _on_single_toggled(self, checked: bool) -> None:
         self.style_combo.setEnabled(not checked)
+        self.max_spin.setEnabled(not checked)
         self._persist_opts()
 
     def _on_pool_changed(self) -> None:

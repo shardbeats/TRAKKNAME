@@ -40,7 +40,8 @@ class GenerationService:
     def generate(self, genre: str | None = None, language: str | None = None,
                  artist_count: int | None = None, style: str | None = None,
                  save: bool = True, single_word: bool | None = None,
-                 moods: list[str] | None = None, artist_pool: str | None = None) -> GenerationResult:
+                 moods: list[str] | None = None, artist_pool: str | None = None,
+                 max_chars: int | None = None) -> GenerationResult:
         s = self.settings.data if hasattr(self.settings, "data") else {}
         language = language or s.get("default_language", "en")
         genre = genre or s.get("default_genre")
@@ -61,6 +62,20 @@ class GenerationService:
             allowed.add("noun")
         if not allowed:
             allowed = {"verb", "adjective", "noun"}
+        if max_chars is None:
+            max_chars = s.get("max_title_length", 0)
+        try:
+            max_chars = int(max_chars)
+        except (TypeError, ValueError):
+            max_chars = 0
+        if max_chars <= 0:
+            max_chars = 0
+        elif max_chars < 12:
+            max_chars = 12
+        elif max_chars > 30:
+            max_chars = 30
+        if single_word:
+            max_chars = 0
         conn = self._conn()
         try:
             return generate_title(
@@ -69,6 +84,7 @@ class GenerationService:
                 w_global=_f(s.get("w_global", 0.10), 0.10, 0.0, 10.0), artist_influence=_f(s.get("artist_influence", 0.5), 0.5, 0.0, 2.0),
                 allowed_pos=allowed, recent_limit=_i(s.get("recent_exclusion_count", 100), 100, 0, 5000),
                 rng=self._rng, save=save, single_word=bool(single_word),
-                moods=moods, w_mood=_f(s.get("w_mood", 1.0), 1.0, 0.0, 10.0), artist_pool=artist_pool)
+                moods=moods, w_mood=_f(s.get("w_mood", 1.0), 1.0, 0.0, 10.0), artist_pool=artist_pool,
+                max_chars=max_chars or None)
         finally:
             conn.close()

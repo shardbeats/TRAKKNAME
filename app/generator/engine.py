@@ -51,7 +51,7 @@ def generate_title(conn: sqlite3.Connection, genre_name: str | None = None, lang
                    recent_limit: int = 100, rng: random.Random | None = None,
                    save: bool = True, single_word: bool = False,
                    moods: list[str] | None = None, w_mood: float = 1.0,
-                   artist_pool: str | None = None) -> GenerationResult:
+                   artist_pool: str | None = None, max_chars: int | None = None) -> GenerationResult:
     rng = rng or random.Random()
     ctx = resolve_context(conn, genre_name, language, artist_count, artist_influence,
                           moods, artist_pool, rng)
@@ -62,8 +62,23 @@ def generate_title(conn: sqlite3.Connection, genre_name: str | None = None, lang
         # Single-word titles are always nouns; don't let word-type
         # checkboxes block the mode.
         allowed_pos = set(allowed_pos) | {"noun"} if allowed_pos else {"noun"}
+    # Max length is best-effort and disabled in 1-WORD mode. 0/None = off.
+    # len() counts spaces (what the user sees on YouTube/BeatStars).
+    limit: int | None = None
+    if not single_word and max_chars:
+        try:
+            limit = int(max_chars)
+        except (TypeError, ValueError):
+            limit = None
+        if limit is not None and limit <= 0:
+            limit = None
 
     last_err: Exception | None = None
+    # Fallback when nothing fits: shortest non-duplicate seen (even if over
+    # the limit), so a strict limit never raises — it just returns the best.
+    best_title: str | None = None
+    best_prow = None
+    best_len: int | None = None
     # One genre-link map for the whole generation: pool_words must NOT
     # re-scan word_genres on every slot of every attempt.
     links = words_repo.load_genre_links(conn)
@@ -78,6 +93,10 @@ def generate_title(conn: sqlite3.Connection, genre_name: str | None = None, lang
             continue
         if normalize_title(title) in recent:
             continue
+        if limit is not None and len(title) > limit:
+            if best_len is None or len(title) < best_len:
+                best_title, best_prow, best_len = title, prow, len(title)
+            continue
         res = GenerationResult(title=title, genre_name=ctx.genre_label, genre_id=ctx.genre_id,
                                language=language, artists=ctx.artists,
                                pattern_name=prow["name"], pattern_template=prow["template"],
@@ -87,5 +106,16 @@ def generate_title(conn: sqlite3.Connection, genre_name: str | None = None, lang
                                       prow["name"], ctx.mood_names,
                                       ctx.artist_pool if ctx.artist_pool else "all")
             recent.add(normalize_title(title))
+        return res
+    if best_title is not None and best_prow is not None:
+        res = GenerationResult(title=best_title, genre_name=ctx.genre_label, genre_id=ctx.genre_id,
+                               language=language, artists=ctx.artists,
+                               pattern_name=best_prow["name"], pattern_template=best_prow["template"],
+                               moods=ctx.mood_names)
+        if save:
+            history_repo.save_history(conn, best_title, ctx.genre_id, language, ctx.artists,
+                                      best_prow["name"], ctx.mood_names,
+                                      ctx.artist_pool if ctx.artist_pool else "all")
+            recent.add(normalize_title(best_title))
         return res
     raise GenerationError(str(last_err) if last_err else "Unable to generate a title. No enabled words are available for this genre.")

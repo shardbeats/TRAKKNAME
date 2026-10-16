@@ -25,6 +25,7 @@ DEFAULTS = {
     "theme": "dark",
     "window_width": 980,
     "window_height": 720,
+    "max_title_length": 0,
 }
 
 

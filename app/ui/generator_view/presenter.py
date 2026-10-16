@@ -17,6 +17,7 @@ class GeneratorOptions:
     style: str = "Random"
     single_word: bool = False
     artist_pool: str = "all"
+    max_chars: int = 0
 
 
 class GeneratorPresenter:
@@ -42,6 +43,7 @@ class GeneratorPresenter:
             "use_nouns": extras.get("use_nouns", True),
             "single_word": opts.single_word,
             "artist_pool": opts.artist_pool,
+            "max_title_length": int(getattr(opts, "max_chars", 0) or 0),
         })
         self.settings.save()
 
@@ -79,4 +81,5 @@ class GeneratorPresenter:
         return self.service.generate(
             genre=opts.genre or None, language=opts.language,
             artist_count=opts.artist_count, style=opts.style,
-            single_word=opts.single_word, artist_pool=opts.artist_pool)
+            single_word=opts.single_word, artist_pool=opts.artist_pool,
+            max_chars=int(getattr(opts, "max_chars", 0) or 0))
