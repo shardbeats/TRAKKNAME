@@ -133,7 +133,7 @@ class GeneratorView(QWidget):
         self.max_spin = QSpinBox()
         self.max_spin.setRange(0, 30)
         self.max_spin.setSpecialValueText("Off")
-        self.max_spin.setToolTip("Max title characters incl. spaces (0=Off, 12-30). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
+        self.max_spin.setToolTip("Max title characters incl. spaces (0=Off). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
         self.max_spin.setMinimumWidth(80)
         max_box.addWidget(self.max_spin)
         opt.addLayout(max_box, 1)

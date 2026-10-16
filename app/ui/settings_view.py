@@ -39,7 +39,7 @@ class SettingsView(QWidget):
         self.max_len = QSpinBox()
         self.max_len.setRange(0, 30)
         self.max_len.setSpecialValueText("Off")
-        self.max_len.setToolTip("Max title characters incl. spaces (0=Off, 12-30). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
+        self.max_len.setToolTip("Max title characters incl. spaces (0=Off). Best effort: returns shortest if none fits. Disabled in 1-WORD.")
         form.addRow("Default language", self.lang)
         form.addRow("Default genre", self.genre)
         form.addRow("Artists per generation", self.artist_count)
