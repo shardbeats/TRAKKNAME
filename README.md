@@ -1,6 +1,6 @@
 # TRAKKNAME
 
-Local desktop app (Python + PySide6 + SQLite) for generating random beat titles from genre-weighted artists and bilingual word banks. Part of the TRAKKOUT product family.
+Local desktop app (Python + PySide6 + SQLite) for generating random beat titles from genre-weighted artists and bilingual word banks. Part of the TRAKK SUITE.
 
 This is the **curation tool**: the vocabulary, artists, moods and patterns curated here feed the mobile rewrite (`trakkname-mobile`) through JSON seed exports.
 

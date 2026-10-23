@@ -1,5 +1,5 @@
 /* BEAT NAME GENERATOR — TRAKKOUT fusion theme (amber/gray dark).
-   Same family palette as TRAKKOUT: tweak here without touching code. */
+   Same SUITE palette as TRAKKOUT: tweak here without touching code. */
 QMainWindow, QWidget {
     background-color: #151617;
     color: #E5E5E5;
@@ -233,7 +233,7 @@ QSlider::handle:horizontal {
     background: #F5A623;
 }
 QToolTip { background-color: #1C1D1F; color: #E5E5E5; border: 1px solid #45474A; }
-/* Mood sidebar (TRAKKOUT family: sidebar frame + collapsible section) */
+/* Mood sidebar (TRAKK SUITE: sidebar frame + collapsible section) */
 QFrame#sidebar {
     background-color: #1C1D1F;
     border: 1px solid #45474A;

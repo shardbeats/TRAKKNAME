@@ -1,4 +1,4 @@
-"""Collapsible mood sidebar (TRAKKOUT family: sidebar frame + real collapse).
+"""Collapsible mood sidebar (TRAKK SUITE: sidebar frame + real collapse).
 
 Multi-select up to 2 moods (store-taxonomy best practice). Empty = any mood.
 """

@@ -1,4 +1,4 @@
-"""Generate the TRAKKNAME icon with Pillow (TRAKKOUT family style).
+"""Generate the TRAKKNAME icon with Pillow (TRAKK SUITE style).
 
 Design: amber circle (brand accent #F5A623) + white diagonal slash
 (music/play gesture) + dark notch detail. Transparent background.
