@@ -4,9 +4,7 @@
 
 **[Download for Windows](https://github.com/shardbeats/TRAKKNAME/releases/latest)** · **[Android version](https://github.com/shardbeats/TRAKKNAME-IONIC)** · **[All 6 tools](https://shardbeats.github.io/tools/)** · **[Free beat pack](https://shardbeats.github.io/landing/)**
 
-<!-- Screenshot: save the image as docs/screenshot.png, then uncomment this block
 <p align="center"><img src="docs/screenshot.png" alt="TRAKKNAME generating beat titles by genre, mood and language" width="880"></p>
--->
 
 Free and open source (MIT). Portable ~50 MB exe, no install, no account — your data stays in a local SQLite file.
 
