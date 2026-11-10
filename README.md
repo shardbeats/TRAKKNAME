@@ -37,13 +37,15 @@ run.bat        :: launch with existing .venv
 ```
 Manual: `pip install -r requirements.txt` then `python app\main.py`.
 
-## Portable .exe (no Python needed)
+## Portable ZIP (no Python needed)
 ```bat
-.venv\Scripts\python.exe build_exe.py          :: tests + windowed one-file exe (~50 MB)
-.venv\Scripts\python.exe build_exe.py --console :: console build (diagnostics on clean PCs)
+.venv\Scripts\python.exe build_portable.py --version 1.3.1 :: tests + onedir + dist\TRAKKNAME-portable-<ver>.zip
+.venv\Scripts\python.exe build_portable.py --console       :: console build (diagnostics on clean PCs)
 ```
-Copy `dist\TRAKKNAME.exe` anywhere (USB stick included) and run it — fully
-portable, no install. First launch creates `data\` next to the exe
+Unzip `dist\TRAKKNAME-portable-<version>.zip` once and run
+`TRAKKNAME\TRAKKNAME.exe` (USB stick included) - fully portable, no install,
+instant startup (nothing is extracted to `%TMP%`). First launch creates `data\`
+next to the exe
 (`trakkname.db`, `settings.json`, `logs\app.log`), migrating any existing
 `%APPDATA%` copy once. Opt out with `use_appdata.flag` next to the exe or
 `TRAKKNAME_APPDATA=1`; override with `TRAKKNAME_DATA_DIR=<dir>`.

@@ -13,8 +13,8 @@ Operations handover for keeping this project healthy. Read before touching seed,
 python -m pytest tests/ -q        :: 47 tests, must pass before any change
 python app\main.py                :: run from source
 set QT_QPA_PLATFORM=offscreen     :: for windowless UI smoke tests
-.venv\Scripts\python.exe build_exe.py          :: tests + portable one-file exe (~50 MB, dist/ is gitignored)
-.venv\Scripts\python.exe build_exe.py --console :: console build to diagnose startup failures on clean PCs
+.venv\Scripts\python.exe build_portable.py --version X.Y.Z :: tests + portable ZIP (onedir, instant startup)
+.venv\Scripts\python.exe build_portable.py --console       :: console build to diagnose startup failures on clean PCs
 ```
 
 ## Seed rules (important)
