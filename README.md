@@ -1,5 +1,16 @@
 # TRAKKNAME
 
+> **Generate beat titles offline** from genre-weighted artists, bilingual EN/ES word banks and a 20-mood type-beat axis. Built for producers who need a name in five seconds, not a thesaurus.
+
+**[Download for Windows](https://github.com/shardbeats/TRAKKNAME/releases/latest)** · **[Android version](https://github.com/shardbeats/TRAKKNAME-IONIC)** · **[All 6 tools](https://shardbeats.github.io/tools/)** · **[Free beat pack](https://shardbeats.github.io/landing/)**
+
+<!-- Screenshot: save the image as docs/screenshot.png, then uncomment this block
+<p align="center"><img src="docs/screenshot.png" alt="TRAKKNAME generating beat titles by genre, mood and language" width="880"></p>
+-->
+
+Free and open source (MIT). Portable ~50 MB exe, no install, no account — your data stays in a local SQLite file.
+
+
 Local desktop app (Python + PySide6 + SQLite) for generating random beat titles from genre-weighted artists and bilingual word banks. Part of the TRAKK SUITE.
 
 This is the **curation tool**: the vocabulary, artists, moods and patterns curated here feed the mobile rewrite (`trakkname-mobile`) through JSON seed exports.
@@ -108,3 +119,36 @@ tools/               kaikki/ (constants + filters + db + collect + cli), import_
 
 ## License
 MIT (add LICENSE file as needed).
+
+## TRAKK SUITE
+
+Six free, offline tools for beatmakers. They are independent: install only what you need.
+
+| Tool | What it does |
+|---|---|
+| [TRAKKSTUDIO](https://github.com/shardbeats/TRAKKSTUDIO) | Organize, convert and normalize in a single window |
+| [TRAKKCONVERTER](https://github.com/shardbeats/TRAKKCONVERTER) | Sample libraries → WAV for the Roland SP-404MK2 |
+| [TRAKKNORMALIZER](https://github.com/shardbeats/TRAKKNORMALIZER) | Per-clip peak normalization for sample packs |
+| **TRAKKNAME** | Beat title generator (EN/ES, 20 moods) |
+| [TRAKKOUT](https://github.com/shardbeats/TRAKKOUT) | Beat + artwork → 1080p MP4 for YouTube |
+| [TRAKKLICENSE](https://github.com/shardbeats/TRAKKLICENSE) | Beat license contracts as PDF (EN/ES) |
+
+- **Website:** https://shardbeats.github.io/tools/
+- **Free beat pack (WAV + stems):** https://shardbeats.github.io/landing/
+- **Sound kits:** https://www.beatstars.com/shardbeats/sound-kits
+
+## FAQ
+
+**Is it free?** Yes. MIT licensed, free for personal and commercial use, with no account and no usage limits.
+
+**How does it generate titles?** Genre-weighted artist pools, EN/ES vocabulary (verbs, adjectives, nouns), eight generation patterns and an optional mood axis. Spanish adjective agreement is handled.
+
+**Can I use the titles commercially?** Yes. Titles are generated text, not copyrighted material — no attribution needed.
+
+**Do the titles repeat?** There is a duplicate-avoidance window, and artists never repeat within a single generation.
+
+**Can I edit the word banks and artists?** Yes. The database has full CRUD, plus JSON import/export and a reset to factory seed data.
+
+**Is there an Android version?** Yes — https://github.com/shardbeats/TRAKKNAME-IONIC
+
+**Does it work offline?** Yes. Everything is a local SQLite database.
