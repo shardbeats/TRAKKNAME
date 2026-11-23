@@ -6,7 +6,7 @@
 
 <p align="center"><img src="docs/screenshot.png" alt="TRAKKNAME generating beat titles by genre, mood and language" width="880"></p>
 
-Free and open source (MIT). Portable ~50 MB exe, no install, no account — your data stays in a local SQLite file.
+Free and open source (GPL-3.0-only). Portable ~50 MB exe, no install, no account — your data stays in a local SQLite file.
 
 
 Local desktop app (Python + PySide6 + SQLite) for generating random beat titles from genre-weighted artists and bilingual word banks. Part of the TRAKK SUITE.
@@ -118,7 +118,7 @@ tools/               kaikki/ (constants + filters + db + collect + cli), import_
 ```
 
 ## License
-MIT (add LICENSE file as needed).
+GPL-3.0-only — see `LICENSE` and `LICENSING.md` (versions published before 2026-11-23 remain MIT).
 
 ## TRAKK SUITE
 
@@ -139,7 +139,7 @@ Six free, offline tools for beatmakers. They are independent: install only what 
 
 ## FAQ
 
-**Is it free?** Yes. MIT licensed, free for personal and commercial use, with no account and no usage limits.
+**Is it free?** Yes. GPL-3.0-only licensed, free for personal and commercial use, with no account and no usage limits.
 
 **How does it generate titles?** Genre-weighted artist pools, EN/ES vocabulary (verbs, adjectives, nouns), eight generation patterns and an optional mood axis. Spanish adjective agreement is handled.
 

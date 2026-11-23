@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 """Entry point: init dirs, logging, DB+seed, settings, launch UI."""
 from __future__ import annotations
 
