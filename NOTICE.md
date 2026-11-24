@@ -21,4 +21,4 @@ are NOT covered by the code license (GPL-3.0-only; MIT for versions published be
 
 See `THIRD-PARTY-NOTICES.md`. Curated vocabulary/seed data
 shipped in `seed_data/` and `seed-json/` exports are part of
-the MIT-licensed code unless a file header says otherwise.
+the GPL-3.0-only code unless a file header says otherwise.
